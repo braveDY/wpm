@@ -97,9 +97,10 @@ from isaaclab_rl.rsl_rl import (
 )
 from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 
+import isaaclab_tasks  # noqa: F401
 import wmp  # noqa: F401
-from wmp.utils import get_checkpoint_path
-from wmp.utils.hydra import hydra_task_config
+from isaaclab_tasks.utils import get_checkpoint_path
+from isaaclab_tasks.utils.hydra import hydra_task_config
 
 
 @hydra_task_config(args_cli.task, args_cli.agent)

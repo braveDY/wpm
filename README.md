@@ -1,101 +1,10 @@
-# WMP A1 Rough Task
-
-基于 Isaac Lab 的 Unitree A1 粗糙地形速度跟踪任务，采用 manager-based 环境配置，并使用 RSL-RL PPO 训练。
-
-当前项目已经将官方 `isaaclab_tasks` 中的 A1 rough velocity 任务迁移到本地 `wmp` 包中，运行时不再依赖 `isaaclab_tasks`。
-
-## 当前任务
-
-- 训练任务：`Wmp-Velocity-Rough-A1-v0`
-- 播放任务：`Wmp-Velocity-Rough-A1-Play-v0`
-- 机器人资产：`isaaclab_assets.robots.unitree.UNITREE_A1_CFG`
-- 训练算法：`RSL-RL PPO`
-
-## 目录结构
-
-```text
-wmp/
-├── scripts/
-│   ├── list_envs.py
-│   ├── random_agent.py
-│   ├── zero_agent.py
-│   └── rsl_rl/
-│       ├── cli_args.py
-│       ├── play.py
-│       └── train.py
-└── source/
-    └── wmp/
-        ├── config/
-        ├── setup.py
-        └── wmp/
-            ├── __init__.py
-            ├── common/
-            │   ├── env_cfg.py
-            │   └── mdp.py
-            ├── robots/
-            │   └── a1/
-            │       ├── __init__.py
-            │       ├── agent_cfg.py
-            │       └── env_cfg.py
-            └── utils/
-                ├── hydra.py
-                └── parse_cfg.py
-```
-
-## 代码组织
-
-- `source/wmp/wmp/common/env_cfg.py`
-  - 共享的 velocity rough 任务基类。
-  - 定义场景、观测、动作、奖励、事件、终止条件和 curriculum。
-- `source/wmp/wmp/common/mdp.py`
-  - velocity 任务专用的 `mdp` 扩展。
-  - 在 `isaaclab.envs.mdp` 基础上补充 reward、termination 和 curriculum 逻辑。
-- `source/wmp/wmp/robots/a1/env_cfg.py`
-  - A1 的特化环境配置。
-  - 负责替换机器人资产、调整地形参数、设置 A1 专用 reward 和 event。
-- `source/wmp/wmp/robots/a1/agent_cfg.py`
-  - A1 的 PPO 训练超参数。
-- `source/wmp/wmp/robots/a1/__init__.py`
-  - 注册 `Wmp-Velocity-Rough-A1-v0` 和 `Wmp-Velocity-Rough-A1-Play-v0`。
-- `source/wmp/wmp/utils/parse_cfg.py`
-  - 本地化的任务配置解析工具。
-- `source/wmp/wmp/utils/hydra.py`
-  - 本地化的 Hydra 任务配置适配层。
-
-## 环境要求
-
-- Python `>= 3.10`
-- Isaac Lab
-- `isaaclab`
-- `isaaclab_assets`
-- `isaaclab_rl`
-- `rsl-rl-lib==5.0.1`
-- `trimesh`
-
-项目当前通过 `source/wmp/setup.py` 安装 Python 包，子包发现已改为 `find_packages()`。
-
-## 安装
-
-如果你已经处于 Isaac Lab 的 Python 环境中，通常可直接在项目根目录执行：
-
+## 下载模型参数
 ```bash
-pip install -e source/wmp
+rsync -avzP autodl:/root/wpm/logs /home/brave/isaaclab_pj/wmp
 ```
 
-如果你的 Isaac Lab 工作流要求通过扩展方式加载，也可以继续沿用现有扩展加载方式，只要确保 `wmp` 包已在 Python 路径中可见。
+说明：当前项目本地化的是任务相关代码；训练、播放和配置解析仍复用 `isaaclab_tasks.utils`。
 
-## 查看已注册任务
-
-```bash
-python scripts/list_envs.py --keyword Wmp
-```
-
-如果注册正常，应至少能看到：
-
-```text
-Wmp-Velocity-Rough-A1-v0
-Wmp-Velocity-Rough-A1-Play-v0
-```
 
 ## 训练
 
@@ -121,7 +30,7 @@ logs/rsl_rl/unitree_a1_rough/
 ## 播放训练结果
 
 ```bash
-python scripts/rsl_rl/play.py --task Wmp-Velocity-Rough-A1-Play-v0
+python scripts/rsl_rl/play.py --task Wmp-Velocity-Rough-A1-Play-v0 --headless --video --video_length 1000
 ```
 
 如果要指定某个 checkpoint：
@@ -178,12 +87,11 @@ source/wmp/wmp/robots/
 
 当前实现来源于 Isaac Lab 官方 A1 rough velocity manager-based 任务，但已经做了本地化拆分：
 
-- 去掉了对 `isaaclab_tasks` 的运行时依赖
 - 将公共 velocity 逻辑下沉到 `wmp.common`
-- 将任务解析和 Hydra 适配下沉到 `wmp.utils`
 - 将机器人特化配置集中到 `wmp.robots.<robot>`
+- 继续复用 `isaaclab_tasks.utils` 中现成的配置工具和 Hydra 适配
 
-这种拆分便于后续继续添加其他机器人的 locomotion velocity 任务，而不需要重新依赖官方任务包。
+这种拆分便于后续继续添加其他机器人的 locomotion velocity 任务，同时避免重复复制官方通用工具代码。
 
 ## 当前限制
 

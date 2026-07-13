@@ -40,13 +40,6 @@ class UnitreeA1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.events.base_com = None
 
         self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
-        self.rewards.feet_air_time.weight = 0.01
-        self.rewards.undesired_contacts = None
-        self.rewards.dof_torques_l2.weight = -0.0002
-        self.rewards.track_lin_vel_xy_exp.weight = 1.5
-        self.rewards.track_ang_vel_z_exp.weight = 0.75
-        self.rewards.dof_acc_l2.weight = -2.5e-7
-
         self.terminations.base_contact.params["sensor_cfg"].body_names = "trunk"
 
 
@@ -57,12 +50,12 @@ class UnitreeA1RoughEnvCfg_PLAY(UnitreeA1RoughEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
-        self.scene.num_envs = 50
+        self.scene.num_envs = 16
         self.scene.env_spacing = 2.5
         self.scene.terrain.max_init_terrain_level = None
         if self.scene.terrain.terrain_generator is not None:
-            self.scene.terrain.terrain_generator.num_rows = 5
-            self.scene.terrain.terrain_generator.num_cols = 5
+            self.scene.terrain.terrain_generator.num_rows = 4
+            self.scene.terrain.terrain_generator.num_cols = 4
             self.scene.terrain.terrain_generator.curriculum = False
 
         self.observations.policy.enable_corruption = False
