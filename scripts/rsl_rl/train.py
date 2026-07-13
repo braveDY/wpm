@@ -100,14 +100,12 @@ from isaaclab_rl.rsl_rl import (
     handle_deprecated_rsl_rl_checkpoint,
 )
 
-import isaaclab_tasks  # noqa: F401
-from isaaclab_tasks.utils import get_checkpoint_path
-from isaaclab_tasks.utils.hydra import hydra_task_config
+import wmp  # noqa: F401
+from wmp.utils import get_checkpoint_path
+from wmp.utils.hydra import hydra_task_config
 
 # import logger
 logger = logging.getLogger(__name__)
-
-import wmp  # noqa: F401
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True

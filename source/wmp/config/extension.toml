@@ -10,7 +10,7 @@ readme  = "README.md"
 title = "WMP A1 PPO Baseline"
 author = "WMP Project"
 maintainer = "WMP Project"
-description = "WMP A1 rough-terrain DirectRLEnv and RSL-RL PPO baseline for Isaac Lab"
+description = "WMP A1 rough-terrain manager-based locomotion task and RSL-RL PPO baseline for Isaac Lab"
 repository = ""
 keywords = ["isaaclab", "wmp", "quadruped", "a1", "rsl-rl"]
 
@@ -18,7 +18,6 @@ keywords = ["isaaclab", "wmp", "quadruped", "a1", "rsl-rl"]
 "isaaclab" = {}
 "isaaclab_assets" = {}
 "isaaclab_rl" = {}
-"isaaclab_tasks" = {}
 # NOTE: Add additional dependencies here
 
 [[python.module]]
