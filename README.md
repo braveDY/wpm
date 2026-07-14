@@ -1,6 +1,6 @@
 ## 下载模型参数
 ```bash
-rsync -avzP autodl:/root/wpm/logs /home/brave/isaaclab_pj/wmp
+rsync -avzP --ignore-existing autodl:/root/wpm/logs/ /home/brave/isaaclab_pj/wmp/logs/
 ```
 
 说明：当前项目本地化的是任务相关代码；训练、播放和配置解析仍复用 `isaaclab_tasks.utils`。
@@ -17,7 +17,7 @@ python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0
 ```bash
 python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --num_envs 1024
 python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --max_iterations 1000
-python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --seed 42
+python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --headless
 python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --video
 ```
 
@@ -25,6 +25,18 @@ python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --video
 
 ```text
 logs/rsl_rl/unitree_a1_rough/
+```
+
+复杂地形精调时，先把 [env_cfg.py](/home/brave/isaaclab_pj/wmp/source/wmp/wmp/robots/a1/env_cfg.py:9) 里的 `FINETUNE` 改成 `True`，然后继续加载已有 checkpoint：
+
+```bash
+python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --resume --load_run <原训练目录名> --checkpoint <checkpoint文件名>
+```
+
+精调日志默认写入：
+
+```text
+logs/rsl_rl/unitree_a1_rough_finetune/
 ```
 
 ## 播放训练结果

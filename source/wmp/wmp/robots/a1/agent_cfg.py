@@ -1,5 +1,7 @@
 """A1 RSL-RL 配置。"""
 
+from importlib import import_module
+
 from isaaclab.utils import configclass
 from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlPpoActorCriticCfg, RslRlPpoAlgorithmCfg
 
@@ -9,7 +11,7 @@ class UnitreeA1RoughPPORunnerCfg(RslRlOnPolicyRunnerCfg):
     """A1 粗糙地形 PPO 配置。"""
 
     num_steps_per_env = 24
-    max_iterations = 1500
+    max_iterations = 2500
     save_interval = 50
     experiment_name = "unitree_a1_rough"
     policy = RslRlPpoActorCriticCfg(
@@ -34,3 +36,8 @@ class UnitreeA1RoughPPORunnerCfg(RslRlOnPolicyRunnerCfg):
         desired_kl=0.01,
         max_grad_norm=1.0,
     )
+
+    def __post_init__(self):
+        env_cfg = import_module("wmp.robots.a1.env_cfg")
+        if env_cfg.FINETUNE:
+            self.experiment_name = "unitree_a1_rough_finetune"
