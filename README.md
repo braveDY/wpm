@@ -19,6 +19,13 @@ python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --num_envs 1024
 python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --max_iterations 1000
 python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --headless
 python scripts/rsl_rl/train.py --task Wmp-Velocity-Rough-A1-v0 --video
+
+python scripts/rsl_rl/train.py \
+    --task Wmp-Velocity-Rough-A1-v0 \
+    --resume \
+    --load_run 2026-07-14_17-52-57 \
+    --checkpoint model_2499.pt \
+    --max_iterations 5500
 ```
 
 训练日志默认写入：
@@ -48,7 +55,10 @@ python scripts/rsl_rl/play.py --task Wmp-Velocity-Rough-A1-Play-v0 --headless --
 如果要指定某个 checkpoint：
 
 ```bash
-python scripts/rsl_rl/play.py --task Wmp-Velocity-Rough-A1-Play-v0 --checkpoint /abs/path/to/model.pt
+python scripts/rsl_rl/play.py \
+    --task Wmp-Velocity-Rough-A1-Play-v0 \
+    --checkpoint logs/rsl_rl/unitree_a1_rough/2026-07-14_17-52-57/model_2499.pt \
+    --num_envs 16
 ```
 
 ## 随机动作和零动作调试

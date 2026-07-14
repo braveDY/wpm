@@ -11,7 +11,7 @@ from isaaclab.assets import Articulation, RigidObject
 from isaaclab.envs import mdp as base_mdp
 from isaaclab.envs.mdp import *  # noqa: F401, F403
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.sensors import ContactSensor
+from isaaclab.sensors import ContactSensor, RayCaster
 from isaaclab.terrains import TerrainImporter
 from isaaclab.utils.math import quat_apply_inverse, yaw_quat
 
@@ -93,6 +93,37 @@ def feet_slide(
     asset = env.scene[asset_cfg.name]
     body_vel = asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2]
     return torch.sum(body_vel.norm(dim=-1) * contacts, dim=1)
+
+
+def height_scan_image(
+    env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg, offset: float = 0.5
+) -> torch.Tensor:
+    """将高度扫描重排为单通道二维高度图。"""
+    height_values = base_mdp.height_scan(env, sensor_cfg=sensor_cfg, offset=offset)
+    sensor: RayCaster = env.scene.sensors[sensor_cfg.name]
+    pattern_cfg = sensor.cfg.pattern_cfg
+
+    if not hasattr(pattern_cfg, "resolution") or not hasattr(pattern_cfg, "size"):
+        raise ValueError("高度图观测要求 `height_scanner` 使用 GridPatternCfg。")
+
+    resolution = pattern_cfg.resolution
+    x_count = int(round(pattern_cfg.size[0] / resolution)) + 1
+    y_count = int(round(pattern_cfg.size[1] / resolution)) + 1
+
+    if height_values.shape[1] != x_count * y_count:
+        raise ValueError(
+            f"高度扫描数量与网格尺寸不一致: got {height_values.shape[1]}, expected {x_count * y_count}."
+        )
+
+    ordering = getattr(pattern_cfg, "ordering", "xy")
+    if ordering == "xy":
+        height_map = height_values.reshape(env.num_envs, y_count, x_count)
+    elif ordering == "yx":
+        height_map = height_values.reshape(env.num_envs, x_count, y_count).transpose(1, 2)
+    else:
+        raise ValueError(f"不支持的 GridPattern 排列方式: {ordering}")
+
+    return height_map.unsqueeze(1)
 
 
 def track_lin_vel_xy_yaw_frame_exp(

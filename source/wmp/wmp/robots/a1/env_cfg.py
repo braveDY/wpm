@@ -17,6 +17,7 @@ class UnitreeA1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         self.scene.robot = UNITREE_A1_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/trunk"
+        self.scene.height_scanner.pattern_cfg.resolution = 0.05
 
         self.events.add_base_mass.params["asset_cfg"].body_names = "trunk"
         self.events.base_external_force_torque.params["asset_cfg"].body_names = "trunk"
@@ -73,10 +74,13 @@ class UnitreeA1RoughEnvCfg_PLAY(UnitreeA1RoughEnvCfg):
 
         self.scene.num_envs = 16
         self.scene.env_spacing = 2.5
+        
+        self.scene.terrain.terrain_generator = ROUGH_TERRAINS_CFG
         self.scene.terrain.max_init_terrain_level = None
         self.scene.terrain.terrain_generator.num_rows = 4
         self.scene.terrain.terrain_generator.num_cols = 4
         self.scene.terrain.terrain_generator.curriculum = False
 
         self.observations.policy.enable_corruption = False
+        self.observations.height_map.enable_corruption = False
         self.events.base_external_force_torque = None
