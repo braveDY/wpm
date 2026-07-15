@@ -54,7 +54,7 @@ class VelocitySceneCfg(InteractiveSceneCfg):
         prim_path="{ENV_REGEX_NS}/Robot/base",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
         ray_alignment="yaw",
-        pattern_cfg=patterns.GridPatternCfg(resolution=0.1, size=[1.6, 1.0]),
+        pattern_cfg=patterns.GridPatternCfg(resolution=0.05, size=[1.6, 1.0]),
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
@@ -172,12 +172,12 @@ class EventCfg:
         params={
             "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
             "velocity_range": {
-                "x": (-0.5, 0.5),
-                "y": (-0.5, 0.5),
-                "z": (-0.5, 0.5),
-                "roll": (-0.5, 0.5),
-                "pitch": (-0.5, 0.5),
-                "yaw": (-0.5, 0.5),
+                "x": (0.0, 0.0),
+                "y": (0.0, 0.0),
+                "z": (0.0, 0.0),
+                "roll": (0.0, 0.0),
+                "pitch": (0.0, 0.0),
+                "yaw": (0.0, 0.0),
             },
         },
     )
@@ -198,21 +198,41 @@ class EventCfg:
 class RewardsCfg:
     """奖励配置。"""
 
+    termination_penalty = RewTerm(func=mdp.is_terminated, weight=-50.0)
     track_lin_vel_xy_exp = RewTerm(
-        func=mdp.track_lin_vel_xy_exp,
+        func=mdp.track_lin_vel_xy_yaw_frame_exp,
         weight=1.5,
-        params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
+        params={"command_name": "base_velocity", "std": math.sqrt(0.1)},
     )
     track_ang_vel_z_exp = RewTerm(
-        func=mdp.track_ang_vel_z_exp,
+        func=mdp.track_ang_vel_z_world_exp,
         weight=0.75,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
+    )
+    progress_along_command = RewTerm(
+        func=mdp.progress_along_command,
+        weight=1.0,
+        params={"command_name": "base_velocity", "command_threshold": 0.1},
     )
     lin_vel_z_l2 = RewTerm(func=mdp.lin_vel_z_l2, weight=-2.0)
     ang_vel_xy_l2 = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.05)
     dof_torques_l2 = RewTerm(func=mdp.joint_torques_l2, weight=-0.0002)
     dof_acc_l2 = RewTerm(func=mdp.joint_acc_l2, weight=-2.5e-7)
     action_rate_l2 = RewTerm(func=mdp.action_rate_l2, weight=-0.01)
+    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-2.0)
+    feet_slide = RewTerm(
+        func=mdp.feet_slide,
+        weight=-0.05,
+        params={
+            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT"),
+            "asset_cfg": SceneEntityCfg("robot", body_names=".*FOOT"),
+        },
+    )
+    feet_stumble = RewTerm(
+        func=mdp.feet_stumble,
+        weight=-2.0,
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*FOOT")},
+    )
     feet_air_time = RewTerm(
         func=mdp.feet_air_time,
         weight=0.01,
@@ -221,6 +241,11 @@ class RewardsCfg:
             "command_name": "base_velocity",
             "threshold": 0.5,
         },
+    )
+    stand_still_joint_deviation = RewTerm(
+        func=mdp.stand_still_joint_deviation_l1,
+        weight=-0.1,
+        params={"command_name": "base_velocity", "command_threshold": 0.1},
     )
 
 

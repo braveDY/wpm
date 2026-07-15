@@ -95,6 +95,14 @@ def feet_slide(
     return torch.sum(body_vel.norm(dim=-1) * contacts, dim=1)
 
 
+def feet_stumble(env: ManagerBasedRLEnv, sensor_cfg: SceneEntityCfg) -> torch.Tensor:
+    """惩罚足端撞到障碍物侧边。"""
+    contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    forces_z = torch.abs(contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, 2])
+    forces_xy = torch.linalg.norm(contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, :2], dim=2)
+    return torch.any(forces_xy > 4.0 * forces_z, dim=1).float()
+
+
 def track_lin_vel_xy_yaw_frame_exp(
     env: ManagerBasedRLEnv, std: float, command_name: str, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
@@ -112,6 +120,22 @@ def track_ang_vel_z_world_exp(
     asset = env.scene[asset_cfg.name]
     ang_vel_error = torch.square(env.command_manager.get_command(command_name)[:, 2] - asset.data.root_ang_vel_w[:, 2])
     return torch.exp(-ang_vel_error / std**2)
+
+
+def progress_along_command(
+    env: ManagerBasedRLEnv,
+    command_name: str,
+    command_threshold: float = 0.1,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+) -> torch.Tensor:
+    """奖励沿速度指令方向的实际前进。"""
+    asset = env.scene[asset_cfg.name]
+    command = env.command_manager.get_command(command_name)[:, :2]
+    command_speed = torch.norm(command, dim=1)
+    command_dir = command / torch.clamp(command_speed.unsqueeze(-1), min=1.0e-6)
+    vel_yaw = quat_apply_inverse(yaw_quat(asset.data.root_quat_w), asset.data.root_lin_vel_w[:, :3])
+    progress = torch.sum(vel_yaw[:, :2] * command_dir, dim=1)
+    return progress * (command_speed > command_threshold)
 
 
 def stand_still_joint_deviation_l1(

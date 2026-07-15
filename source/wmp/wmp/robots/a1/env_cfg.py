@@ -18,6 +18,13 @@ class UnitreeA1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.scene.robot = UNITREE_A1_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/trunk"
 
+        self.commands.base_velocity.rel_heading_envs = 0.0
+        self.commands.base_velocity.heading_command = False
+        self.commands.base_velocity.ranges.lin_vel_x = (0.2, 0.8)
+        self.commands.base_velocity.ranges.lin_vel_y = (-0.1, 0.1)
+        self.commands.base_velocity.ranges.ang_vel_z = (-0.3, 0.3)
+        self.commands.base_velocity.ranges.heading = (0.0, 0.0)
+
         self.events.add_base_mass.params["asset_cfg"].body_names = "trunk"
         self.events.base_external_force_torque.params["asset_cfg"].body_names = "trunk"
         self.events.reset_base.params = {
@@ -33,6 +40,9 @@ class UnitreeA1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         }
 
         self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_foot"
+        self.rewards.feet_slide.params["sensor_cfg"].body_names = ".*_foot"
+        self.rewards.feet_slide.params["asset_cfg"].body_names = ".*_foot"
+        self.rewards.feet_stumble.params["sensor_cfg"].body_names = ".*_foot"
         self.terminations.base_contact.params["sensor_cfg"].body_names = "trunk"
 
         if FINETUNE:
@@ -50,17 +60,6 @@ class UnitreeA1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
             }
         else:
             self.scene.terrain.terrain_generator = ROUGH_TERRAINS_CFG
-            self.events.reset_base.params = {
-                "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
-                "velocity_range": {
-                    "x": (0.0, 0.0),
-                    "y": (0.0, 0.0),
-                    "z": (0.0, 0.0),
-                    "roll": (0.0, 0.0),
-                    "pitch": (0.0, 0.0),
-                    "yaw": (0.0, 0.0),
-                },
-            }
         self.scene.terrain.terrain_generator.curriculum = True
 
         
